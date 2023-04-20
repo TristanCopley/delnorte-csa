@@ -1,5 +1,5 @@
 ---
-title: Week of 04-17, Student Teaching
+title: Week 30 - Student Teaching
 date: '2023-04-20'
 summary: 'Student Teaching Week'
 tags: ['overview']
