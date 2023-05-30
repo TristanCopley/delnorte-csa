@@ -43,7 +43,7 @@ export async function saveQuestion(question: string, answerChoices: string[], co
 	  const document = docSnap.data();
 	  console.log('document:' + JSON.stringify(document));
 	  let correct_answers = correctAnswers;
-	  if(document != null){
+	  if(document != undefined){
 		questions.push(...document.questions);
 		correct_answers = [...correctAnswers, ...document.correct_answers];
 	  }
