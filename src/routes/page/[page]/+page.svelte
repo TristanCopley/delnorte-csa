@@ -7,22 +7,97 @@
 	import Metadata from './Metadata.svelte';
 	import QuizEditor from './QuizEditor.svelte';
 
+	import { getPages, getFolderMetadata } from '\$/lib/utils/pages';
+
 	import { onMount } from 'svelte';
 	import { database, user } from '$/firebase';
-	import { doc, collection, setDoc, getDoc, getDocs } from 'firebase/firestore';
+	import { doc, collection, setDoc, getDoc, getDocs, deleteDoc } from 'firebase/firestore';
 
 	let webpage = '/';
 	$: webpage = $page.params.page;
 
+	let updated = false;
+
 	let type = '';
 
-	onMount(async () => {
+	async function updatePagesFirebase(){
 		const db = database();
 		const pageDocRef = doc(db, 'pages' + '/' + webpage);
 		const pageDocSnapshot = await getDoc(pageDocRef);
 		const pageDocData = pageDocSnapshot.data();
 
 		type = pageDocData?.type;
+
+		const _pages = await getPages();
+		const post = await _pages[webpage].import();
+		
+		
+		if(!pageDocData){
+
+			if (post.metadata.type === 'frq_assignment' || post.metadata.type === 'quiz_assignment'){
+			
+				let pageData = {
+
+					correct_answers: {},
+					
+					questions:
+					{
+						question: '',
+						answers: {}
+
+					},
+
+					grade_total: post.metadata.grade_total,
+					due_start: post.metadata.due_start,
+					due_end: post.metadata.due_end,
+					type: post.metadata.type,
+					ungraded_submissions: []
+
+				}
+
+				console.log(pageData);
+
+				await setDoc(pageDocRef, pageData);
+
+				updated = true;
+				type = post.metadata.type;
+
+			}
+
+			else{
+
+				let pageData = {
+
+					grade_total: post.metadata.grade_total,
+					due_start: post.metadata.due_start,
+					due_end: post.metadata.due_end,
+					type: post.metadata.type,
+
+				}
+
+				console.log(pageData);
+
+				await setDoc(pageDocRef, pageData, {merge: true});
+				updated = true
+				type = post.metadata.type;
+
+			}
+
+		}
+		
+		else {
+			if (post.metadata.type === 'page'){
+				await deleteDoc(pageDocRef);
+				updated = true;
+
+				type = post.metadata.type;
+			}
+		}
+	}
+
+	onMount(async () => {
+		await updatePagesFirebase(); 
+		updated = true; 
 	});
 
 	let showmetadata = false;
@@ -34,6 +109,7 @@
 	function viewTable() {
 		showmetadata = false;
 	}
+
 </script>
 
 {#if $admin}
@@ -78,10 +154,12 @@
 	{/if}
 {:else if type === 'frq_assignment'}
 	<div class="bg-blue-500 w-full h-full">
+		{#if updated}
 		<Frq {webpage} />
+		{/if}
 	</div>
 {:else if type === 'quiz_assignment'}
-	<div class="bg-blue-500 w-full h-64">
+	<div class="w-full h-64">
 		<Quiz {webpage} />
 	</div>
 {:else}
