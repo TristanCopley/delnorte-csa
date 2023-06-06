@@ -39,3 +39,7 @@ Del Norte CSA by Us is open source code, and free to develop on for everyone and
 ## Formatting and Adding Files
 
 All routing is based on where each page is located in the project. Add files of certain pages by using page.svelte and layout.svelte files, then work using markdown. There are many samples within the project that will make understanding how to add to the project much simpler.
+
+## How to Collaborate
+
+All collaboration for this project was done through individual forks and pull requests. By launching pull requests rather than full blown committing on the same branch, we were able to pervent merge conflicts that broke the project.
